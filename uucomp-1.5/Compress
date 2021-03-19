@@ -1,0 +1,12 @@
+#! /bin/sh
+UUADDR="erc@pobox.com"
+export UUADDR
+for i in $*
+do
+	if [ -d /var/spool/uucp/$i/C. ]
+	then
+#		echo Looking at $i
+		cd /var/spool/uucp/$i/C.
+		/usr/bin/uucomp $i C.*
+	fi
+done

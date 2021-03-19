@@ -1,0 +1,73 @@
+Like most people these days, I'm looking for ways to make my computing
+environment more efficient.  This environment consists of a 486, a 386,
+and a 386SL laptop, all of which run Taylor uucp under Linux.  The 386
+laptop gets used a lot, since it goes wherever I go and I answer a lot
+of news and email every day.  Often, I must use other people's facilities
+(phone lines and such) to send out replies and post news if I'm not at home.
+Since it's not fair to the client for them to pay for my zone calls back
+to my home in Fremont, I place the calls on my phone card.  Unfortunately,
+PacBell is very proud of the services they offer, especially in regards
+to this convenience of automatically charging calls to my house wherever I
+may be.  Considering that this can be very expensive to do, I searched for
+a way to cut my phone bill down to something I could afford to pay each
+month without fainting every time I saw the bill.
+
+The first thing I did was to go out and plunk $195 for a 14.4KB modem.
+That helped, but C-News is very slow on my laptop, and batching articles
+is even slower, and email (of course) isn't batched at all.  Even with
+MNP5 compression turned on, this doesn't make for a very efficient setup,
+even at high speeds.
+
+Playing around with uucp told me that the line turnaround wasn't that much
+overhead, nor was sending the C./X. files (the execute files) - the real
+overhead was sending out uncompressed news and especially email, since
+I subscribe to several mailing lists and digests can run quite large.
+
+I looked at uubatch, but the most current version I could find (1.05) was
+not compatible with Taylor uucp (and I had no other alternative), so I
+decided to write my own.  Experiments with "gzip -9" convinced me that
+that was the way to go, since gzip gives email and news 60 to 75 percent
+compression, which would tend to cut one's phone bill significantly.
+
+You hold in your mailbox (or news reader) the end result of that effort.
+Bear in mind that (1) this is a "first cut" and while it is unlikely that
+there are very many bugs, there are certainly places where the programs could
+be improved and tuned.  Suggestions and comments are welcome!
+
+To install:
+
+	1.	Feed this to shar.
+	2.	Look at the Makefile.  Make sure that the paths for
+		things are set up correctly.
+	3.	Look at uucomp.h and make sure that the path and
+		options for COMPRESS/UNCOMPRESS are set up properly.
+	3.	Type "make".  This will make uucomp, crmail, and crnews
+		and will place them in /usr/bin.  Move Compress into
+		/usr/lib/uucp.
+	4.	Make an entry in crontab to do
+			/usr/lib/uucp/Compress site1 site2 site3...
+		occasionally.  It is suggested that this be done fairly
+		frequently.  Alternately, you could set up a login shell
+		for selected sites to run uucomp every time that site
+		logged in.
+	5.	Don't forget to add /usr/bin/crmail and /usr/bin/crnews
+		to the list of programs allowed to be executed in your
+		Permissions file (if running HDB UUCP), or whatever is
+		appropriate for your version of uucp.
+
+Enjoy!  Any questions or comments can be sent to erc@apple.com.
+
+Note:  This is tuned for Taylor uucp, but would not be particularly
+difficult to adapt to other version of uucp.  See the file INTERNALS for
+details of how this works.
+
+July 15, 1993
+Ed Carp
+erc@apple.com
+------------------------------------------------------------------------------
+Changes since 1.0:
+
+      Version	Date		Description
+
+	1.1	08/04/93	Added sanity check in C. file (check that
+				'E' is first char in file, otherwise skip)

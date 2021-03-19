@@ -1,0 +1,3 @@
+main	crmail.c	/^main (argc, argv)$/
+main	crnews.c	/^main (argc, argv)$/
+main	uucomp.c	/^main (argc, argv)$/

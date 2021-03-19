@@ -1,0 +1,9 @@
+for i in $*
+do
+	if [ -d /usr/spool/uucp/$i ]
+	then
+#		echo Looking at $i
+		cd /usr/spool/uucp/$i
+		/usr/bin/uucomp C.*
+	fi
+done

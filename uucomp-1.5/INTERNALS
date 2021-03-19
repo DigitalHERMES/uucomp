@@ -1,0 +1,15 @@
+This is the basic workflow for uucomp:
+
+for (every argv)
+do
+	if not "C." file skip
+	if open fail, skip
+	read 1 line from C. file
+	grab second and 10th field (second is data file name,
+		10th is command name)
+	if open fail on second field, skip
+	if 10th field isn't "rmail" or "rnews", skip
+	execute "gzip -9" on second field
+	change "rmail" and "rnews" to "crmail" and "crnews", respectively
+		in C. file
+done

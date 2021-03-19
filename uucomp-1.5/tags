@@ -1,0 +1,16 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/darren@hiebert.com/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.0.1	//
+NULL	frmail.c	7;"	d	file:
+NULL	frmail.c	8;"	d	file:
+NULL	uucomp.c	41;"	d	file:
+NULL	uucomp.c	42;"	d	file:
+Trim	frmail.c	/^Trim (s)$/;"	f
+main	crmail.c	/^main (argc, argv)$/;"	f
+main	crnews.c	/^main (argc, argv)$/;"	f
+main	frmail.c	/^main ()$/;"	f
+main	uucomp.c	/^main (argc, argv)$/;"	f
+replace	frmail.c	/^replace (str, lookfor, replacement)$/;"	f
