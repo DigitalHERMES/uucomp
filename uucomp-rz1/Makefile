@@ -29,7 +29,7 @@ crnews: crnews.o uucomp.h
 uucomp: uucomp.o uucomp.h
 	$(CC) $(CFLAGS) -o uucomp uucomp.o $(LDFLAGS)  -O
 
-install:
+install: $(PROGRAMS)
 	install $(PROGRAMS) $(PREFIX)/bin/
 
 clean:
