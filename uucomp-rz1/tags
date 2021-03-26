@@ -1,0 +1,10 @@
+Mcrmail	crmail.c	/^int main (argc, argv)$/
+Mcrnews	crnews.c	/^int main (argc, argv)$/
+Mfrmail	frmail.c	/^int main ()$/
+Muucomp	uucomp.c	/^int main (argc, argv)$/
+NULL	uucomp.c	45
+NULL	uucomp.c	46
+NULL	frmail.c	9
+NULL	frmail.c	10
+Trim	frmail.c	/^Trim (s)$/
+replace	frmail.c	/^replace (str, lookfor, replacement)$/
