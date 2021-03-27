@@ -60,7 +60,7 @@ char **argv;
 
     printf ("uucomp rz1 28/03/21  ... by erc@pobox.com and rafael@rhizomatica.org\nscanning %d files.", argc - 1);
 
-    for (i = 2; i < argc; i++)
+    for (i = 1; i < argc; i++)
     {
         if (strncmp (argv[i], "C.", 2) != 0)
         {
