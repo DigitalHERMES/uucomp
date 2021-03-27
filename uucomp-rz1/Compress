@@ -1,11 +1,11 @@
 #! /bin/sh
 
-for i in $*
+for i in $(ls -1 /var/spool/uucp/)
 do
 	if [ -d /var/spool/uucp/$i/C. ]
 	then
 		echo Looking at system $i
 		cd /var/spool/uucp/$i/C.
-		/usr/bin/uucomp $i C.*
+		/usr/bin/uucomp C.*
 	fi
 done
