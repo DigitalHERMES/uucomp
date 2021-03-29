@@ -1,7 +1,7 @@
 /*
  * uucomp - compress outgoing news/mail
  * 
- * usage: uucomp remote-systemname C.*
+ * usage: uucomp C.*
  * 
  * This works for Taylor uucp (available from prep.ai.mit.edu:/pub/gnu/uucp*),
  * but I don't promise it works for anyone else's uucp package.  Basically, this
