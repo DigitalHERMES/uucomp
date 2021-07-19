@@ -65,6 +65,13 @@ int main (int argc, char *argv[])
 
         printf("%s payload: %s\n", argv[i], c_payload);
 
+        // Open the payload D. file
+        // check if email contains image or audio
+        // if yes, compress the media and then the whole email with gzip (and add an
+        // identification in the payload indicating compressed media attached)
+        // othewise just compress with gzip
+
+
         fclose(c_file);
 
     }
