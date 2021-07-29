@@ -21,14 +21,15 @@
 CC=gcc
 prefix=/usr
 CFLAGS=-g -Wall -pedantic -std=gnu11 -pthread -fstack-protector
+LDFLAGS=-lb64
 
 all: uucomp crmail
 
 uucomp: uucomp.c
-	$(CC) $(CFLAGS) uucomp.c -o uucomp
+	$(CC) $(CFLAGS) uucomp.c -o uucomp $(LDFLAGS)
 
 crmail: crmail.c
-	$(CC) $(CFLAGS) crmail.c -o crmail
+	$(CC) $(CFLAGS) crmail.c -o crmail $(LDFLAGS)
 
 .PHONY: clean install
 clean:

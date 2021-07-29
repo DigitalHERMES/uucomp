@@ -1,3 +1,16 @@
 # HERMES uucomp
 
-This is HERMES uucomp
+This is HERMES uucomp.
+
+## Supported features
+
+Gzip all content. Especially compress jpeg and aac attached content.
+
+## Dependencies
+
+UUCOMP depends on libb64 (and libb64-dev on Debian-based systems)
+
+## Author
+
+Rafael Diniz <rafael@rhizomatica.org>
+
