@@ -20,7 +20,7 @@
 
 CC=gcc
 prefix=/usr
-CFLAGS=-g -Wall -pedantic -std=gnu11 -pthread -fstack-protector
+CFLAGS=-g -Wall -pedantic -Wno-format-overflow -std=gnu11 -pthread -fstack-protector
 LDFLAGS=-lb64
 
 all: uucomp crmail

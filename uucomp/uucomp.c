@@ -67,6 +67,8 @@ int main (int argc, char *argv[])
     char *char_ptr4;
     char *char_ptr5;
 
+    char *original_filename;
+
     int encoding_type = ENC_TYPE_NONE;
 
     char *blob = NULL;
@@ -191,6 +193,13 @@ int main (int argc, char *argv[])
         if (encoding_type == ENC_TYPE_NONE)
             goto compress;
 
+        original_filename = strstr(char_ptr2, "Content-Disposition:");
+        if (original_filename == NULL)
+        {
+            encoding_type = ENC_TYPE_NONE;
+            goto compress;
+        }
+
         char_ptr3 = strstr(char_ptr2, "Content-Transfer-Encoding: base64");
         if (char_ptr3 == NULL)
         {
@@ -274,6 +283,18 @@ int main (int argc, char *argv[])
 
         unlink(tmp_media_filename);
 
+        if (stat(tmp_encoded_media_filename, &st) != 0)
+        {
+            printf("%s could not be opened.\n", tmp_encoded_media_filename);
+            goto compress;
+        }
+        file_size = st.st_size;
+
+        printf("%s size is: %ld\n", tmp_encoded_media_filename, file_size);
+
+        if (file_size == 0)
+            goto compress;
+
         // *************************************************
         // write new D. file... - In place...
         d_file = fopen(d_filename, "w");
@@ -290,14 +311,8 @@ int main (int argc, char *argv[])
             fprintf(d_file, "Content-Type: image/x-lyra\n");
         }
 
-        if (stat(tmp_encoded_media_filename, &st) != 0)
-        {
-            printf("%s could not be opened.\n", tmp_encoded_media_filename);
-            continue;
-        }
-        file_size = st.st_size;
-
-        printf("%s size is: %ld\n", tmp_encoded_media_filename, file_size);
+        // write the old filename...
+        fwrite(original_filename, char_ptr3 - original_filename, 1, d_file);
 
         blob = malloc(file_size);
 
