@@ -50,6 +50,7 @@ int main (int argc, char *argv[])
 
     FILE *tmp_media;
     char tmp_media_filename[MAX_FILENAME];
+    char tmp_encoded_media_filename[MAX_FILENAME];
 
     struct stat st;
     off_t file_size;
@@ -230,10 +231,16 @@ int main (int argc, char *argv[])
         int media_size = base64_decode_block(char_ptr4, char_ptr5 - char_ptr4, blob, &b64_state);
 
         if (encoding_type == ENC_TYPE_IMAGE)
+        {
             sprintf(tmp_media_filename, "/tmp/uucomp.%d.jpg", getpid ());
+            sprintf(tmp_encoded_media_filename, "/tmp/uucomp.%d.vvc", getpid ());
+        }
 
         if (encoding_type == ENC_TYPE_AUDIO)
+        {
             sprintf(tmp_media_filename, "/tmp/uucomp.%d.aac", getpid ());
+            sprintf(tmp_encoded_media_filename, "/tmp/uucomp.%d.lyra", getpid ());
+        }
 
         tmp_media = fopen(tmp_media_filename, "w");
 
@@ -251,26 +258,58 @@ int main (int argc, char *argv[])
 
         // ********************
         // compress the media
+
         char enc_cmd[MAX_FILENAME];
         if (encoding_type == ENC_TYPE_IMAGE)
         {
-            // sprintf(enc_cmd, "encode_image %s", tmp_media_filename);
-            // system(enc_cmd); // or popen ??
+            sprintf(enc_cmd, "compress_image.sh %s %s", tmp_media_filename, tmp_encoded_media_filename);
+            system(enc_cmd); // or popen ??
         }
 
         if (encoding_type == ENC_TYPE_AUDIO)
         {
-            // sprintf(enc_cmd, "encode_audio %s", tmp_media_filename);
-            // system(enc_cmd); // or popen ??
+            sprintf(enc_cmd, "compress_audio.sh %s %s", tmp_media_filename, tmp_encoded_media_filename);
+            system(enc_cmd); // or popen ??
         }
 
         unlink(tmp_media_filename);
 
         // *************************************************
-        // write new D. file... - In place... 
+        // write new D. file... - In place...
         d_file = fopen(d_filename, "w");
 
-        // write all the new D. content...
+        fwrite(d_payload, char_ptr2 - d_payload, 1, d_file);
+
+        if (encoding_type == ENC_TYPE_IMAGE)
+        {
+            fprintf(d_file, "Content-Type: image/x-vvc\n");
+        }
+
+        if (encoding_type == ENC_TYPE_AUDIO)
+        {
+            fprintf(d_file, "Content-Type: image/x-lyra\n");
+        }
+
+        if (stat(tmp_encoded_media_filename, &st) != 0)
+        {
+            printf("%s could not be opened.\n", tmp_encoded_media_filename);
+            continue;
+        }
+        file_size = st.st_size;
+
+        printf("%s size is: %ld\n", tmp_encoded_media_filename, file_size);
+
+        blob = malloc(file_size);
+
+        tmp_media = fopen(tmp_encoded_media_filename, "r");
+        fread(blob, file_size, 1, tmp_media);
+        fclose(tmp_media);
+
+        unlink(tmp_encoded_media_filename);
+
+        fwrite(blob, file_size, 1, d_file);
+
+        free(blob);
 
         fclose(d_file);
 
@@ -284,10 +323,33 @@ int main (int argc, char *argv[])
         // othewise just compress with gzip
 
     compress:
-        printf(".\n");
+        printf("Compressing now.\n");
+
+        char compress_cmd[MAX_FILENAME];
+        sprintf (compress_cmd, "gzip -9c -fc > /tmp/uucomp.%d < %s; cp /tmp/uucomp.%d %s",
+                 getpid (), d_filename, getpid (), d_filename);
+        system (compress_cmd);
+
+        sprintf (compress_cmd, "/tmp/uucomp.%d", getpid ());
+        unlink (compress_cmd);
+
+// re-writing C. file
+        c_file = fopen(c_filename, "w");
+        if (c_file == NULL)
+        {
+            printf("%s could not be opened.\n", c_filename);
+            continue;
+        }
+
+        sprintf(uu_cmd, "crmail");
+
+        fprintf(c_file, "%s %s %s %s %s %s %s %s %s %s %s\n", field1,
+                field2, field3, field4, field5, field6, field7, field8, field9,
+                uu_cmd, field11);
+
+        fclose(c_file);
 
         free(d_payload);
-
     }
 
     return EXIT_SUCCESS;
