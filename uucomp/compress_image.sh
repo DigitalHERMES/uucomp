@@ -1,17 +1,19 @@
 #!/bin/bash
-# uso:
+# usage:
 # compress_image.sh image_filename.{png,gif,...} [output.{jpg,avif,heic,vvc}]
 
 ## env vars:
 # VVC_ENC: vvc enc binary
-# TARGET SIZE: target size
+# TARGET SIZE: target size in bits
+# input_file
+# output_file
 
 # initial VVC QP... it will only get bigger...
 VVC_QP=39
 
 QUALITY=75 # initial start quality to try for jpeg
 
-VVC_ENC=${VVC_ENC:=/root/vvenc/install/bin/vvencapp}
+VVC_ENC=${VVC_ENC:=/opt/vvc/vvencapp}
 EVC_ENC=${EVC_ENC:=/root/xeve/build/bin/xeve_app}
 AV1_ENC=${AV1_ENC:=/root/aom/build2/aomenc}
 
@@ -98,6 +100,7 @@ elif [ ${IMAGE_FORMAT} = "vvc" ]; then
 
 elif [ ${IMAGE_FORMAT} = "avif" ]; then
 
+# TODO
   ${AV1_ENC} --target-bitrate=${TARGET_SIZE} --end-usage=cbr --bit-depth=8 ...
 
 elif [ ${IMAGE_FORMAT} = "jpg" ]; then
@@ -109,6 +112,7 @@ elif [ ${IMAGE_FORMAT} = "jpg" ]; then
 
 elif [ ${IMAGE_FORMAT} = "heic" ]; then
 
+# TODO
   while [ "$(stat -c%s "${TEMPFILE}")" -gt "$MAX_SIZE" ] && [ "$QUALITY" -gt "5" ]; do
     convert -resize "840x840>"  "${input_file}" -quality ${QUALITY} ${TEMPFILE}
     QUALITY=$((QUALITY-10))
