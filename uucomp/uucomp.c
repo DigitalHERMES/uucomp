@@ -248,7 +248,7 @@ int main (int argc, char *argv[])
         if (encoding_type == ENC_TYPE_AUDIO)
         {
             sprintf(tmp_media_filename, "/tmp/uucomp.%d.aac", getpid ());
-            sprintf(tmp_encoded_media_filename, "/tmp/uucomp.%d.lyra", getpid ());
+            sprintf(tmp_encoded_media_filename, "/tmp/uucomp.%d.lpcnet", getpid ());
         }
 
         tmp_media = fopen(tmp_media_filename, "w");
@@ -308,7 +308,7 @@ int main (int argc, char *argv[])
 
         if (encoding_type == ENC_TYPE_AUDIO)
         {
-            fprintf(d_file, "Content-Type: image/x-lyra\n");
+            fprintf(d_file, "Content-Type: audio/x-lpcnet\n");
         }
 
         // write the old filename...
