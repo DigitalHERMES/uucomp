@@ -42,6 +42,7 @@ int main (int argc, char *argv[])
     char uncompress_cmd[MAX_FILENAME];
     char tmp_mail[MAX_FILENAME];
     char *blob;
+    char rmail_cmd[MAX_FILENAME];
 
     struct stat st;
     off_t file_size;
@@ -109,28 +110,29 @@ int main (int argc, char *argv[])
 
     if (encoding_type == ENC_TYPE_NONE)
     {
-        // just call rmail...
-        return EXIT_SUCCESS;
+        sprintf(rmail_cmd, "(rmail ");
+        for (int i = 1; i < argc; i++)
+        {
+            strcat (rmail_cmd, argv[i]);
+            strcat (rmail_cmd, " ");
+        }
+        sprintf (rmail_cmd+strlen(rmail_cmd), "< %s)", tmp_mail);
+
+        printf("Running: %s\n", rmail_cmd);
+
+        system(rmail_cmd);
+
+        goto exit_successful;
     }
+
+    // printf("aa\n%s", char_ptr);
 
     // now extract the payload, decode it, convert back to base64, and re-write the email...
 
-#if 0
 
-    sprintf (cmd, "(%s|%s ", UNCOMPRESS, RMAIL);
-    for (int i = 1; i < argc; i++)
-    {
-        strcat (cmd, argv[i]);
-        strcat (cmd, " ");
-    }
-  sprintf (cmd2, ") >> %s 2>&1", UULOG);
-  strcat (cmd, cmd2);
-  i = system (cmd);
-  if (i != 0)
-    fprintf (log, "Running '%s', rc=%d\n", cmd, i);
-  exit (i);
-#endif
+exit_successful:
+    unlink(tmp_mail);
 
-    // TODO
+
     return EXIT_SUCCESS;
 }
