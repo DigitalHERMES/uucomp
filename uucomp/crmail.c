@@ -130,8 +130,10 @@ int main (int argc, char *argv[])
     char_ptr2 = strstr(char_ptr, "filename=");
 
     char_ptr3 = strstr(char_ptr2, "\n");
+    char_ptr3++;
 
     printf("file payload: %s\n", char_ptr3);
+
 
     // printf("aa\n%s", char_ptr);
 
