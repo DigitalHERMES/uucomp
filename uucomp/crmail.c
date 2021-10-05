@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <b64/cencode.h>
+
 #define MAX_FILENAME 4096
 #define S_BUF 128
 
@@ -40,12 +42,13 @@ int main (int argc, char *argv[])
 
     // Variables declaration
     char uncompress_cmd[MAX_FILENAME];
+    char decode_cmd[MAX_FILENAME];
     char tmp_mail[MAX_FILENAME];
     char *blob;
     char rmail_cmd[MAX_FILENAME];
 
     struct stat st;
-    off_t file_size;
+    off_t file_size, decoded_media_file_size;
 
     FILE *tmp_mail_fp;
 
@@ -53,9 +56,11 @@ int main (int argc, char *argv[])
     char  *char_ptr2;
     char  *char_ptr3;
 
-    FILE *tmp_encoded_media;
-    char tmp_decoded_media_filename[MAX_FILENAME];
-    char tmp_encoded_media_filename[MAX_FILENAME];
+    FILE *encoded_media;
+    FILE *decoded_media;
+
+    char decoded_media_filename[MAX_FILENAME];
+    char encoded_media_filename[MAX_FILENAME];
 
 
     int encoding_type = ENC_TYPE_NONE;
@@ -115,22 +120,10 @@ int main (int argc, char *argv[])
     }
 
 
+// if it is a message just gzipped...
     if (encoding_type == ENC_TYPE_NONE)
-    {
-        sprintf(rmail_cmd, "(rmail ");
-        for (int i = 1; i < argc; i++)
-        {
-            strcat (rmail_cmd, argv[i]);
-            strcat (rmail_cmd, " ");
-        }
-        sprintf (rmail_cmd+strlen(rmail_cmd), "< %s)", tmp_mail);
+        goto send_mail;
 
-        printf("Running: %s\n", rmail_cmd);
-
-        system(rmail_cmd);
-
-        goto exit_successful;
-    }
 
     char_ptr2 = strstr(char_ptr, "filename=");
 
@@ -138,26 +131,108 @@ int main (int argc, char *argv[])
     char_ptr3++;
 
     if (encoding_type == ENC_TYPE_IMAGE)
-        sprintf(tmp_encoded_media_filename, "/tmp/crmail_encoded.vvc");
+        sprintf(encoded_media_filename, "/tmp/crmail_encoded.%d.vvc", getpid ());
 
     if (encoding_type == ENC_TYPE_AUDIO)
-        sprintf(tmp_encoded_media_filename, "/tmp/crmail_encoded.lpcnet");
+        sprintf(encoded_media_filename, "/tmp/crmail_encoded.%d.lpcnet", getpid ());
 
-    tmp_encoded_media = fopen(tmp_encoded_media_filename, "w");
+    encoded_media = fopen(encoded_media_filename, "w");
 
-    if (tmp_encoded_media == NULL)
+    if (encoded_media == NULL)
     {
-        printf("%s could not be opened.\n", tmp_encoded_media_filename);
-        return EXIT_FAILURE;
+        printf("%s could not be opened.\n", encoded_media_filename);
+        goto send_mail;
     }
 
-    fwrite(char_ptr3, (blob + file_size) - char_ptr3, 1, tmp_encoded_media);
+    fwrite(char_ptr3, (blob + file_size) - char_ptr3, 1, encoded_media);
 
-    fclose(tmp_encoded_media);
+    fclose(encoded_media);
+
+
+    if (encoding_type == ENC_TYPE_IMAGE)
+    {
+        sprintf(decoded_media_filename, "/tmp/crmail_decoded.%d.jpg", getpid ());
+        sprintf(decode_cmd, "decompress_image.sh %s %s", encoded_media_filename, decoded_media_filename);
+    }
+
+    if (encoding_type == ENC_TYPE_AUDIO)
+    {
+        sprintf(decoded_media_filename, "/tmp/crmail_decoded.%d.aac", getpid ());
+        sprintf(decode_cmd, "decompress_audio.sh %s %s", encoded_media_filename, decoded_media_filename);
+    }
+
+    system(decode_cmd);
+
+    // now we need to convert the decoded media back to base64...
+    if (stat(decoded_media_filename, &st) != 0)
+    {
+        printf("%s could not be opened.\n", decoded_media_filename);
+        goto send_mail;
+    }
+    decoded_media_file_size = st.st_size;
+
+    if (decoded_media_file_size == 0)
+    {
+        printf("%s has zero size.\n", decoded_media_filename);
+        goto send_mail;
+    }
+
+    decoded_media = fopen(decoded_media_filename, "r");
+
+    if (decoded_media == NULL)
+    {
+        printf("%s could not be opened.\n", decoded_media_filename);
+        goto send_mail;
+    }
+
+    char *decoded_media_blob;
+
+    decoded_media_blob = malloc(decoded_media_file_size);
+
+    fread(decoded_media_blob, decoded_media_file_size, 1, decoded_media);
+
+    fclose(decoded_media);
+
+    base64_encodestate b64_state;
+    base64_init_encodestate(&b64_state);
+
+    char *b64_blob = malloc(4 * decoded_media_file_size);
+
+    int rc;
+    rc = base64_encode_block(decoded_media_blob, decoded_media_file_size, b64_blob, &b64_state);
+
+    printf("b64 encode_block rc = %d\n", rc);
+
+    rc = base64_encode_blockend(b64_blob, &b64_state);
+
+    printf("b64 encode_blockend rc= %d", rc);
+
+    printf("payload = %s\n", b64_blob);
+
+    // convert o base64... and re-write the email (in place?)
 
     // printf("aa\n%s", char_ptr);
 
     // now extract the payload, decode it, convert back to base64, and re-write the email...
+    unlink(decoded_media_filename);
+    unlink(encoded_media_filename);
+
+    free(decoded_media_blob);
+
+send_mail:
+    sprintf(rmail_cmd, "(rmail ");
+    for (int i = 1; i < argc; i++)
+    {
+        strcat (rmail_cmd, argv[i]);
+        strcat (rmail_cmd, " ");
+    }
+    sprintf (rmail_cmd+strlen(rmail_cmd), "< %s)", tmp_mail);
+
+    printf("Running: %s\n", rmail_cmd);
+
+    system(rmail_cmd);
+
+    goto exit_successful;
 
 
 exit_successful:
