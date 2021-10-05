@@ -328,7 +328,6 @@ int main (int argc, char *argv[])
 
         fclose(d_file);
 
-
         // search for: "Content-Type: image/jpeg"
         // search for: "Content-Type: audio/aac"
         // Open the payload D. file
@@ -338,7 +337,7 @@ int main (int argc, char *argv[])
         // othewise just compress with gzip
 
     compress:
-        printf("Compressing now.\n");
+       printf("Compressing now.\n");
 
         char compress_cmd[MAX_FILENAME];
         sprintf (compress_cmd, "gzip -9c -fc > /tmp/uucomp.%d < %s; cp /tmp/uucomp.%d %s",

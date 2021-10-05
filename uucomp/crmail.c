@@ -50,6 +50,8 @@ int main (int argc, char *argv[])
     FILE *tmp_mail_fp;
 
     char *char_ptr;
+    char  *char_ptr2;
+    char  *char_ptr3;
 
     int encoding_type = ENC_TYPE_NONE;
 
@@ -125,13 +127,19 @@ int main (int argc, char *argv[])
         goto exit_successful;
     }
 
+    char_ptr2 = strstr(char_ptr, "filename=");
+
+    char_ptr3 = strstr(char_ptr2, "\n");
+
+    printf("file payload: %s\n", char_ptr3);
+
     // printf("aa\n%s", char_ptr);
 
     // now extract the payload, decode it, convert back to base64, and re-write the email...
 
 
 exit_successful:
-    unlink(tmp_mail);
+    // unlink(tmp_mail);
 
 
     return EXIT_SUCCESS;

@@ -1,4 +1,4 @@
-# uBitxv6 Rhizomatica tools
+# UUCOMP
 # Copyright (C) 2019-2021 Rhizomatica
 # Author: Rafael Diniz <rafael@riseup.net>
 #
