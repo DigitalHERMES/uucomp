@@ -53,6 +53,11 @@ int main (int argc, char *argv[])
     char  *char_ptr2;
     char  *char_ptr3;
 
+    FILE *tmp_encoded_media;
+    char tmp_decoded_media_filename[MAX_FILENAME];
+    char tmp_encoded_media_filename[MAX_FILENAME];
+
+
     int encoding_type = ENC_TYPE_NONE;
 
     // Code starts here
@@ -132,8 +137,23 @@ int main (int argc, char *argv[])
     char_ptr3 = strstr(char_ptr2, "\n");
     char_ptr3++;
 
-    printf("file payload: %s\n", char_ptr3);
+    if (encoding_type == ENC_TYPE_IMAGE)
+        sprintf(tmp_encoded_media_filename, "/tmp/crmail_encoded.vvc");
 
+    if (encoding_type == ENC_TYPE_AUDIO)
+        sprintf(tmp_encoded_media_filename, "/tmp/crmail_encoded.lpcnet");
+
+    tmp_encoded_media = fopen(tmp_encoded_media_filename, "w");
+
+    if (tmp_encoded_media == NULL)
+    {
+        printf("%s could not be opened.\n", tmp_encoded_media_filename);
+        return EXIT_FAILURE;
+    }
+
+    fwrite(char_ptr3, (blob + file_size) - char_ptr3, 1, tmp_encoded_media);
+
+    fclose(tmp_encoded_media);
 
     // printf("aa\n%s", char_ptr);
 
@@ -142,7 +162,7 @@ int main (int argc, char *argv[])
 
 exit_successful:
     // unlink(tmp_mail);
-
+    free(blob);
 
     return EXIT_SUCCESS;
 }
