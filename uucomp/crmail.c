@@ -198,16 +198,21 @@ int main (int argc, char *argv[])
 
     char *b64_blob = malloc(4 * decoded_media_file_size);
 
+
+    printf("b64 raw data size = %ld\n", decoded_media_file_size);
+
+    printf("payload = \n\n"); 
+
     int rc;
     rc = base64_encode_block(decoded_media_blob, decoded_media_file_size, b64_blob, &b64_state);
 
-    printf("b64 encode_block rc = %d\n", rc);
+    fwrite(b64_blob, rc, 1, stdout);
 
     rc = base64_encode_blockend(b64_blob, &b64_state);
+    // and then compare to here to see the difference...
 
-    printf("b64 encode_blockend rc= %d", rc);
+    fwrite(b64_blob, rc, 1, stdout);
 
-    printf("payload = %s\n", b64_blob);
 
     // convert o base64... and re-write the email (in place?)
 
