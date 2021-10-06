@@ -35,7 +35,7 @@ crmail: crmail.c
 clean:
 	rm -f *.o uucomp crmail
 
-install: uucomp crmail compress_image.sh compress_audio.sh
+install: uucomp crmail
 	install -D uucomp $(DESTDIR)$(prefix)/bin/uucomp
 	install -D crmail $(DESTDIR)$(prefix)/bin/crmail
 	install -D ../scripts/compress_image.sh $(DESTDIR)$(prefix)/bin/compress_image.sh
