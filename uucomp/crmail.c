@@ -53,8 +53,11 @@ int main (int argc, char *argv[])
     FILE *tmp_mail_fp;
 
     char *char_ptr;
-    char  *char_ptr2;
-    char  *char_ptr3;
+    char *char_ptr1;
+    char *char_ptr2;
+    char *char_ptr3;
+
+    char *boundary;
 
     FILE *encoded_media;
     FILE *decoded_media;
@@ -124,8 +127,9 @@ int main (int argc, char *argv[])
     if (encoding_type == ENC_TYPE_NONE)
         goto send_mail;
 
+    char_ptr1 = strstr(char_ptr, "Content-Disposition: attachment;");
 
-    char_ptr2 = strstr(char_ptr, "filename=");
+    char_ptr2 = strstr(char_ptr1, "filename=");
 
     char_ptr3 = strstr(char_ptr2, "\n");
     char_ptr3++;
@@ -172,14 +176,24 @@ int main (int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    // .. start rewriting here
 
+    fwrite(blob, char_ptr - blob, 1, tmp_mail_fp);
 
-    // ==
-    // now we need to convert the decoded media back to base64...
+    if (encoding_type == ENC_TYPE_IMAGE)
+        fprintf(tmp_mail_fp, "Content-Type: image/jpeg\n");
+    if (encoding_type == ENC_TYPE_AUDIO)
+        fprintf(tmp_mail_fp, "Content-Type: audio/aac\n");
+
+    fwrite(char_ptr1, char_ptr3 - char_ptr1, 1, tmp_mail_fp);
+
+    fprintf(tmp_mail_fp, "Content-Transfer-Encoding: base64\n\n");
+
+    // now we need to convert the decoded media back to base64... and write
+    // to the "new" email
     if (stat(decoded_media_filename, &st) != 0)
     {
         printf("%s could not be opened.\n", decoded_media_filename);
+        fclose(tmp_mail_fp);
         goto send_mail;
     }
     decoded_media_file_size = st.st_size;
@@ -187,6 +201,7 @@ int main (int argc, char *argv[])
     if (decoded_media_file_size == 0)
     {
         printf("%s has zero size.\n", decoded_media_filename);
+        fclose(tmp_mail_fp);
         goto send_mail;
     }
 
@@ -195,6 +210,7 @@ int main (int argc, char *argv[])
     if (decoded_media == NULL)
     {
         printf("%s could not be opened.\n", decoded_media_filename);
+        fclose(tmp_mail_fp);
         goto send_mail;
     }
 
@@ -211,34 +227,27 @@ int main (int argc, char *argv[])
 
     printf("b64 raw data size = %ld\n", decoded_media_file_size);
 
-    printf("payload = \n\n");
-
-    // < REMOVE-ME
-    FILE *b64d;
-    b64d = fopen("/tmp/crmail-test.b64", "w");
-    // REMOVE-ME >
-
     int rc;
     rc = base64_encode_block(decoded_media_blob, decoded_media_file_size, b64_blob, &b64_state);
-
-    fwrite(b64_blob, rc, 1, b64d);
-
+    fwrite(b64_blob, rc, 1, tmp_mail_fp);
     rc = base64_encode_blockend(b64_blob, &b64_state);
+    fwrite(b64_blob, rc, 1, tmp_mail_fp);
 
-    fwrite(b64_blob, rc, 1, b64d);
+    free(b64_blob);
 
-    // < REMOVE-ME
-    fclose(b64d);
-    // REMOVE-ME >
+    fprintf(tmp_mail_fp, "\n");
 
-    // ... finish rewriting the email...
+    // we need to get the boundary... (... it is a strrstr)
+    boundary = char_ptr;
+    boundary--; boundary--;
+    while (*boundary != 10) // 10 is '\n'
+        boundary--;
+    boundary++;
 
+    // this includes a needed new line.
+    fwrite(boundary, char_ptr - boundary, 1, tmp_mail_fp);
 
-
-
-
-
-
+    // finished rewriting the email!
 
     fclose(tmp_mail_fp);
 
@@ -260,11 +269,7 @@ send_mail:
 
     system(rmail_cmd);
 
-    goto exit_successful;
-
-
-exit_successful:
-    // unlink(tmp_mail);
+    unlink(tmp_mail);
     free(blob);
 
     return EXIT_SUCCESS;
