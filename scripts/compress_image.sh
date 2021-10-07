@@ -119,7 +119,7 @@ elif [ ${IMAGE_FORMAT} = "heic" ]; then
   done;
 
 else
-  echo "Unsupported extension: ${output_file##*.}"
+  echo "Unsupported extension: ${IMAGE_FORMAT}."
   exit
 fi
 
