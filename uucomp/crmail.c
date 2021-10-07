@@ -120,7 +120,7 @@ int main (int argc, char *argv[])
     }
 
 
-// if it is a message just gzipped...
+// if it is a message just gzipped... we go to send email target
     if (encoding_type == ENC_TYPE_NONE)
         goto send_mail;
 
@@ -163,6 +163,19 @@ int main (int argc, char *argv[])
 
     system(decode_cmd);
 
+    // now lets start rewriting the email inline
+    tmp_mail_fp = fopen(tmp_mail, "w");
+
+    if (tmp_mail_fp == NULL)
+    {
+        printf("%s could not be opened.\n", tmp_mail);
+        return EXIT_FAILURE;
+    }
+
+    // .. start rewriting here
+
+
+    // ==
     // now we need to convert the decoded media back to base64...
     if (stat(decoded_media_filename, &st) != 0)
     {
@@ -185,12 +198,10 @@ int main (int argc, char *argv[])
         goto send_mail;
     }
 
+    // now extract the payload, decode it, convert back to base64, and write to the email...
     char *decoded_media_blob;
-
     decoded_media_blob = malloc(decoded_media_file_size);
-
     fread(decoded_media_blob, decoded_media_file_size, 1, decoded_media);
-
     fclose(decoded_media);
 
     base64_encodestate b64_state;
@@ -198,27 +209,39 @@ int main (int argc, char *argv[])
 
     char *b64_blob = malloc(4 * decoded_media_file_size);
 
-
     printf("b64 raw data size = %ld\n", decoded_media_file_size);
 
-    printf("payload = \n\n"); 
+    printf("payload = \n\n");
+
+    // < REMOVE-ME
+    FILE *b64d;
+    b64d = fopen("/tmp/crmail-test.b64", "w");
+    // REMOVE-ME >
 
     int rc;
     rc = base64_encode_block(decoded_media_blob, decoded_media_file_size, b64_blob, &b64_state);
 
-    fwrite(b64_blob, rc, 1, stdout);
+    fwrite(b64_blob, rc, 1, b64d);
 
     rc = base64_encode_blockend(b64_blob, &b64_state);
-    // and then compare to here to see the difference...
 
-    fwrite(b64_blob, rc, 1, stdout);
+    fwrite(b64_blob, rc, 1, b64d);
+
+    // < REMOVE-ME
+    fclose(b64d);
+    // REMOVE-ME >
+
+    // ... finish rewriting the email...
 
 
-    // convert o base64... and re-write the email (in place?)
 
-    // printf("aa\n%s", char_ptr);
 
-    // now extract the payload, decode it, convert back to base64, and re-write the email...
+
+
+
+
+    fclose(tmp_mail_fp);
+
     unlink(decoded_media_filename);
     unlink(encoded_media_filename);
 
