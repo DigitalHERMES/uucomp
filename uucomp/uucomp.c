@@ -135,7 +135,9 @@ int main (int argc, char *argv[])
         // if not... check if this is an email
         if (strcmp (uu_cmd, "rmail") != 0)
         {
-            printf("%s is an email - compressing.\n", c_filename);
+            // should we just compress any uucp payload??
+            printf("%s is not an email. Not compressing.\n", c_filename);
+            continue;
         }
 
         sprintf (d_filename, "../D./%s", field2);
