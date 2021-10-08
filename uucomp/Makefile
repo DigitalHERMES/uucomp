@@ -42,3 +42,4 @@ install: uucomp crmail
 	install -D ../scripts/compress_audio.sh $(DESTDIR)$(prefix)/bin/compress_audio.sh
 	install -D ../scripts/decompress_image.sh $(DESTDIR)$(prefix)/bin/decompress_image.sh
 	install -D ../scripts/decompress_audio.sh $(DESTDIR)$(prefix)/bin/decompress_audio.sh
+	install -D ../scripts/compress.sh $(DESTDIR)$(prefix)/bin/compress.sh
