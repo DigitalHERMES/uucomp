@@ -102,11 +102,11 @@ if [ ${IMAGE_FORMAT} = "evc" ]; then
 
 elif [ ${IMAGE_FORMAT} = "vvc" ]; then
 
-    ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -c yuv420_10 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+    ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420_10 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
 
     if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 --pass 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
       rm -f ${RCFILE}
     fi
 
