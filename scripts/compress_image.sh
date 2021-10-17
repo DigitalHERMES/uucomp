@@ -19,13 +19,12 @@ VVC_ENC=${VVC_ENC:=/opt/vvc/vvencapp}
 EVC_ENC=${EVC_ENC:=/root/xeve/build/bin/xeve_app}
 AV1_ENC=${AV1_ENC:=/root/aom/build2/aomenc}
 
-# reduce...
-TARGET_SIZE=${TARGET_SIZE:=80000} # 10kB == 80000 bits
+# maximum image size setting
+MAX_SIZE=${MAX_SIZE:=10000} # 10kB max size limit
 
-# logic for qp-based bitrate control
-MAX_SIZE=$((${TARGET_SIZE} / 8)) # 10kB file size limit
+# converting to bits...
+TARGET_SIZE=${TARGET_SIZE:=$((${MAX_SIZE} * 8))}
 
-#echo ${VVC_ENC}
 
 # vvc and evc  are the state of the art, no integration to userlad
 # avif and heic are already implemented and integrated to userland
@@ -44,6 +43,8 @@ IMAGE_FORMAT="${output_file##*.}"
 
 TEMPFILE=/tmp/temp-$$.${IMAGE_FORMAT}
 TEMPFILEYUV=/tmp/temp-$$.yuv
+RCFILE=/tmp/temp-$$.rc
+
 
 # this was for JPEG support...
 ## cp -f "${input_file}" ${TEMPFILE}
@@ -79,19 +80,20 @@ resolution=${width}x${height}
 
 echo "New Resolution = ${resolution}"
 
-if [ ${changed_resolution} -eq "1" ]; then
-  echo "Content will be downscaled"
-fi
-
-
 # ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=nw=1:nk=1
 # ffmpeg -i ../../testeCapacidadeMidias/images/FotoFoneMaq_Zap_IncendioBernardoSayao10-07-21_Felipe_Spina_Avino_WWF\ \(1\).jpeg -vf scale=840:840:force_original_aspect_ratio=decrease output.jpg
 # ffmpeg -i blue.png -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p yuv420p_709.yuv
 # -vf scale=840:840:force_original_aspect_ratio=decrease
-# convert directly to: (in order to lose less info...)
-# -pix_fmt yuv420p10le
 
-ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le ${TEMPFILEYUV}
+# input will be converted to YUV 4:2:0 10 bit
+
+
+if [ ${changed_resolution} -eq "1" ]; then
+  echo "Content will be downscaled"
+  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le ${TEMPFILEYUV}
+else
+  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709,format=yuv420p10le ${TEMPFILEYUV}
+fi
 
 if [ ${IMAGE_FORMAT} = "evc" ]; then
 
@@ -100,16 +102,19 @@ if [ ${IMAGE_FORMAT} = "evc" ]; then
 
 elif [ ${IMAGE_FORMAT} = "vvc" ]; then
 
-    ## bitrate control using rc
-    #   ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
-
     ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -c yuv420_10 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
 
-    while [ "$(stat -c%s "${TEMPFILE}")" -gt "$MAX_SIZE" ] && [ "$VVC_QP" -lt "61" ]; do
-      VVC_QP=$((VVC_QP+3))
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -c yuv420_10 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+    if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 --pass 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+      rm -f ${RCFILE}
+    fi
 
-    done;
+## old QP-based rate control
+#    while [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ] && [ "$VVC_QP" -lt "61" ]; do
+#      VVC_QP=$((VVC_QP+3))
+#      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -c yuv420_10 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -c yuv420 -o  ${TEMPFILE}
+#    done;
 
     rm -f ${TEMPFILEYUV}
 
