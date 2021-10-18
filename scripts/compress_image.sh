@@ -113,7 +113,9 @@ elif [ ${IMAGE_FORMAT} = "vvc" ]; then
 
     if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
       ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
+      new_size=$((${TARGET_SIZE} * ${TARGET_SIZE} / 8 * $(stat -c%s "${TEMPFILE}") ))
+      echo "new_size = ${new_size}"
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${new_size} -s ${resolution} --preset medium -o  ${TEMPFILE}
       rm -f ${RCFILE}
     fi
 
