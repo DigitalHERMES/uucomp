@@ -73,12 +73,19 @@ if [ "${width}" -gt "${MAX_DIMENSION_SIZE}" ] || [ "${height}" -gt "${MAX_DIMENS
   changed_resolution=1
 fi
 
-# make resolution multiple of 8
-width=$(( (${width} / 8) * 8 ))
-height=$(( (${height} / 8) * 8 ))
+# make resolution multiple of 4
+new_width=$(( (${width} / 4) * 4 ))
+new_height=$(( (${height} / 4) * 4 ))
+
+if [ "${new_width}" -ne "${width}" ] || [ "${new_height}" -ne "${height}" ]; then
+  width=${new_width}
+  height=${new_height}
+  changed_resolution=1
+fi
+
 resolution=${width}x${height}
 
-echo "New Resolution = ${resolution}"
+echo "Final Resolution = ${resolution}"
 
 # ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=nw=1:nk=1
 # ffmpeg -i ../../testeCapacidadeMidias/images/FotoFoneMaq_Zap_IncendioBernardoSayao10-07-21_Felipe_Spina_Avino_WWF\ \(1\).jpeg -vf scale=840:840:force_original_aspect_ratio=decrease output.jpg
