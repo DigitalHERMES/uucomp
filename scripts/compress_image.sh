@@ -97,9 +97,9 @@ echo "Final Resolution = ${resolution}"
 
 if [ ${changed_resolution} -eq "1" ]; then
   echo "Content will be downscaled"
-  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le ${TEMPFILEYUV}
+  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 else
-  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709,format=yuv420p10le ${TEMPFILEYUV}
+  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 fi
 
 if [ ${IMAGE_FORMAT} = "evc" ]; then
