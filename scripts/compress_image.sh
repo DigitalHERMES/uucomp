@@ -92,14 +92,20 @@ echo "Final Resolution = ${resolution}"
 # ffmpeg -i blue.png -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p yuv420p_709.yuv
 # -vf scale=840:840:force_original_aspect_ratio=decrease
 
-# input will be converted to YUV 4:2:0 10 bit
+
+
+#pictures look darker... try zscale...
+# ffmpeg -i DPX(what_I_want_to_convert_to_DNXHR).dpx -vf lut3d=ArriAlexa_LogCtoRec709_Resolve.cube,zscale=matrix=709,format=yuv444p10le -c:v dnxhd -profile:v dnxhr_444 -an test_zscale.mov
+# ffmpeg -i "INPUT.jpg" -vf zscale=matrixin=470bg:matrix=709:rangein=full:range=limited,format=yuv422p10le -c:v dnxhd -profile:v dnxhr_hqx -an test_jpg_zscale.mov
 
 
 if [ ${changed_resolution} -eq "1" ]; then
   echo "Content will be downscaled"
-  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
+  ffmpeg  -y -i "${input_file}" -vf zscale=matrixin=470bg:matrix=709:rangein=full:range=limited,format=yuv422p10le -vf scale=width=${width}:height=${height} -f rawvideo ${TEMPFILEYUV}
+  # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 else
-  ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
+  ffmpeg  -y -i "${input_file}" -vf zscale=matrixin=470bg:matrix=709:rangein=full:range=limited,format=yuv422p10le -f rawvideo ${TEMPFILEYUV}
+  # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 fi
 
 if [ ${IMAGE_FORMAT} = "evc" ]; then
