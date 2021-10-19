@@ -101,10 +101,10 @@ echo "Final Resolution = ${resolution}"
 
 if [ ${changed_resolution} -eq "1" ]; then
   echo "Content will be downscaled"
-  ffmpeg  -y -i "${input_file}" -vf zscale=matrixin=470bg:matrix=709:rangein=full:range=limited,format=yuv422p10le -vf scale=width=${width}:height=${height} -f rawvideo ${TEMPFILEYUV}
+  ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
   # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 else
-  ffmpeg  -y -i "${input_file}" -vf zscale=matrixin=470bg:matrix=709:rangein=full:range=limited,format=yuv422p10le -f rawvideo ${TEMPFILEYUV}
+  ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
   # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 fi
 
