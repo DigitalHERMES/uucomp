@@ -121,21 +121,28 @@ elif [ ${IMAGE_FORMAT} = "vvc" ]; then
     echo "QP = ${QP}"
 
     if [ "${QP}" -gt "40" ]; then
-	new_width=$(awk "BEGIN {x=${width}*0.7; printf \"%d\n\",x}")
-	new_height=$(awk "BEGIN {x=${height}*0.7; printf \"%d\n\",x}")
+      new_width=$(awk "BEGIN {x=${width}*0.7; printf \"%d\n\",x}")
+      new_height=$(awk "BEGIN {x=${height}*0.7; printf \"%d\n\",x}")
 
-	# make resolution multiple of 4
-	new_width=$(( (${new_width} / 4) * 4 ))
-	new_height=$(( (${new_height} / 4) * 4 ))
+      # make resolution multiple of 4
+      new_width=$(( (${new_width} / 4) * 4 ))
+      new_height=$(( (${new_height} / 4) * 4 ))
 
-	resolution=${new_width}x${new_height}
+      resolution=${new_width}x${new_height}
 
-	echo "Downscaling even more to: ${resolution}"
-	rm -f ${TEMPFILEYUV}
-	convert-im6 -resize "${resolution}!" "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
-	QP=$( ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE} | grep POC | cut -d Q -f 2 | cut -d " " -f 2 )
-	echo "Final QP = ${QP}"
+      echo "Downscaling even more to: ${resolution}"
+      rm -f ${TEMPFILEYUV}
+      convert-im6 -resize "${resolution}!" "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
+      QP=$( ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE} | grep POC | cut -d Q -f 2 | cut -d " " -f 2 )
+      echo "QP 2 = ${QP}"
 
+      if [ "$(stat -c%s "${TEMPFILE}")" -lt "${MAX_SIZE}" ]; then
+        new_size=$(( ${TARGET_SIZE} * ${TARGET_SIZE} / (8 * $(stat -c%s "${TEMPFILE}")) ))
+        echo "new_size = ${new_size}"
+        QP=$( ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${new_size} -s ${resolution} --preset medium -o  ${TEMPFILE} | grep POC | cut -d Q -f 2 | cut -d " " -f 2 )
+        echo "QP 3 = ${QP}"
+      fi
+      rm -f ${RCFILE}
     fi
 	
 #    if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
