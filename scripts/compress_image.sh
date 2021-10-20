@@ -115,19 +115,40 @@ if [ ${IMAGE_FORMAT} = "evc" ]; then
 
 elif [ ${IMAGE_FORMAT} = "vvc" ]; then
 
-  ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420 --internal-bitdepth 8 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -o  ${TEMPFILE}
+    
+    #QP=$( ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420 --internal-bitdepth 8 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -o  ${TEMPFILE} | grep POC | cut -d Q -f 2 | cut -d " " -f 2)
+    QP=$( ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE} | grep POC | cut -d Q -f 2 | cut -d " " -f 2 )
+    echo "QP = ${QP}"
 
-  if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
-    ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
+    if [ "${QP}" -gt "40" ]; then
+	new_width=$(awk "BEGIN {x=${width}*0.7; printf \"%.4f\n\",x}")
+	new_height=$(awk "BEGIN {x=${height}*0.7; printf \"%.4f\n\",x}")
 
-    if [ "$(stat -c%s "${TEMPFILE}")" -lt "${MAX_SIZE}" ]; then
-      new_size=$(( ${TARGET_SIZE} * ${TARGET_SIZE} / (8 * $(stat -c%s "${TEMPFILE}")) ))
-      echo "new_size = ${new_size}"
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${new_size} -s ${resolution} --preset medium -o  ${TEMPFILE}
+	# make resolution multiple of 4
+	new_width=$(( (${new_width} / 4) * 4 ))
+	new_height=$(( (${new_height} / 4) * 4 ))
+
+	resolution=${new_width}x${new_height}
+
+	echo "Downscaling even more to: ${resolution}"
+	rm -f ${TEMPFILEYUV}
+	convert-im6 -resize "${resolution}!" "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
+	QP=$( ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE} | grep POC | cut -d Q -f 2 | cut -d " " -f 2 )
+	echo "Final QP = ${QP}"
+
     fi
-
-    rm -f ${RCFILE}
-  fi
+	
+#    if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
+#	${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
+#
+#	if [ "$(stat -c%s "${TEMPFILE}")" -lt "${MAX_SIZE}" ]; then
+#	    new_size=$(( ${TARGET_SIZE} * ${TARGET_SIZE} / (8 * $(stat -c%s "${TEMPFILE}")) ))
+#	    echo "new_size = ${new_size}"
+#	    ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${new_size} -s ${resolution} --preset medium -o  ${TEMPFILE}
+#	fi
+#	
+#	rm -f ${RCFILE}
+#    fi
 
 ## old QP-based rate control
 #    while [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ] && [ "$VVC_QP" -lt "61" ]; do
