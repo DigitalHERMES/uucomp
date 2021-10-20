@@ -11,11 +11,12 @@
 # initial VVC QP... it will only get bigger...
 VVC_QP=39
 
-MAX_DIMENSION_SIZE=840
+MAX_DIMENSION_SIZE=${MAX_DIMENSION_SIZE:=840}
 
 QUALITY=75 # initial start quality to try for jpeg
 
 VVC_ENC=${VVC_ENC:=/opt/vvc/vvencapp}
+VVC_ENC_FF=${VVC_ENC_FF:=/opt/vvc/vvencFFapp}
 EVC_ENC=${EVC_ENC:=/root/xeve/build/bin/xeve_app}
 AV1_ENC=${AV1_ENC:=/root/aom/build2/aomenc}
 
@@ -45,11 +46,8 @@ TEMPFILE=/tmp/temp-$$.${IMAGE_FORMAT}
 TEMPFILEYUV=/tmp/temp-$$.yuv
 RCFILE=/tmp/temp-$$.rc
 
-
-# this was for JPEG support...
-## cp -f "${input_file}" ${TEMPFILE}
-
-resolution=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "${input_file}" | sed 's/,/x/g')
+# resolution=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "${input_file}" | sed 's/,/x/g')
+resolution=$(identify-im6 -format "%[w]x%[h]" "${input_file}")
 width=$(echo -n ${resolution} | cut -f 1 -d x)
 height=$(echo -n ${resolution} | cut -f 2 -d x)
 
@@ -101,10 +99,12 @@ echo "Final Resolution = ${resolution}"
 
 if [ ${changed_resolution} -eq "1" ]; then
   echo "Content will be downscaled"
-  ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
+  convert-im6 -resize "${resolution}" "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
+  # ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
   # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 else
-  ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
+  convert-im6 "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
+  # ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
   # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 fi
 
@@ -115,14 +115,17 @@ if [ ${IMAGE_FORMAT} = "evc" ]; then
 
 elif [ ${IMAGE_FORMAT} = "vvc" ]; then
 
-    ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420_10 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -o  ${TEMPFILE}
+    ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 -c yuv420 --internal-bitdepth 8 -t 2 -r 1 --qp ${VVC_QP} -s ${resolution} --preset medium -o  ${TEMPFILE}
 
     if [ "$(stat -c%s "${TEMPFILE}")" -gt "${MAX_SIZE}" ]; then
-#      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 1 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
+      # ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${TARGET_SIZE} -s ${resolution} --preset medium -o  ${TEMPFILE}
+
+#      ${VVC_ENC_FF} --InputFile ${TEMPFILEYUV} --Profile main_10_still_picture --PerceptQPA 1 --FramesToBeEncoded 1 --RCStatsFile ${RCFILE} --InputBitDepth 8 
+
       new_size=$(( ${TARGET_SIZE} * ${TARGET_SIZE} / (8 * $(stat -c%s "${TEMPFILE}")) ))
       echo "new_size = ${new_size}"
-      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420_10 -t 2 -r 1 -b ${new_size} -s ${resolution} --preset medium -o  ${TEMPFILE}
+      ${VVC_ENC} -i ${TEMPFILEYUV} --profile main_10_still_picture --qpa 1 -f 1 --pass 2 --rcstatsfile ${RCFILE} -c yuv420 --internal-bitdepth 8 -t 2 -r 1 -b ${new_size} -s ${resolution} --preset medium -o  ${TEMPFILE}
       rm -f ${RCFILE}
     fi
 
@@ -141,8 +144,7 @@ elif [ ${IMAGE_FORMAT} = "avif" ]; then
 ##  ${AV1_ENC} --target-bitrate=${TARGET_SIZE} --end-usage=cbr --bit-depth=8 ...
 elif [ ${IMAGE_FORMAT} = "jpg" ]; then
 
-  echo "JPEG support is temporarily removed."
-  exit
+  cp -f "${input_file}" ${TEMPFILE}
 
   while [ "$(stat -c%s "${TEMPFILE}")" -gt "$MAX_SIZE" ] && [ "${QUALITY}" -gt "5" ]; do
     convert -resize "840x840>" "${input_file}" pnm:- | /opt/mozjpeg/bin/cjpeg -quality ${QUALITY} > ${TEMPFILE}
