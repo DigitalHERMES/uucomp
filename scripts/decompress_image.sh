@@ -7,7 +7,7 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
-VVC_DEC=${VVC_DEC:=/root/vvdec/install/bin/vvdecapp}
+VVC_DEC=${VVC_DEC:=/opt/vvc/vvdecapp}
 EVC_DEC=${EVC_DEC:=/root/xevd/build/bin/xevd_app}
 CJPEG_ENC=${CJPEG:=/opt/mozjpeg/bin/cjpeg}
 
