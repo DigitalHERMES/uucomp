@@ -99,7 +99,7 @@ echo "Final Resolution = ${resolution}"
 
 if [ ${changed_resolution} -eq "1" ]; then
   echo "Content will be downscaled"
-  convert-im6 -resize "${resolution}" "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
+  convert-im6 -resize "${resolution}!" "${input_file}" -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV}
   # ffmpeg  -y -i "${input_file}" -color_range 2 -vf scale=in_range=full:out_range=full:width=${width}:height=${height}:out_color_matrix=bt709,format=yuv420p10le -f rawvideo ${TEMPFILEYUV}
   # ffmpeg -y -i "${input_file}"  -f rawvideo -vf scale=width=${width}:height=${height}:out_color_matrix=bt709:flags=full_chroma_int+accurate_rnd,format=yuv420p10le ${TEMPFILEYUV}
 else
