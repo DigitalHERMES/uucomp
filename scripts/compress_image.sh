@@ -121,8 +121,8 @@ elif [ ${IMAGE_FORMAT} = "vvc" ]; then
     echo "QP = ${QP}"
 
     if [ "${QP}" -gt "40" ]; then
-	new_width=$(awk "BEGIN {x=${width}*0.7; printf \"%.4f\n\",x}")
-	new_height=$(awk "BEGIN {x=${height}*0.7; printf \"%.4f\n\",x}")
+	new_width=$(awk "BEGIN {x=${width}*0.7; printf \"%d\n\",x}")
+	new_height=$(awk "BEGIN {x=${height}*0.7; printf \"%d\n\",x}")
 
 	# make resolution multiple of 4
 	new_width=$(( (${new_width} / 4) * 4 ))
