@@ -1,6 +1,6 @@
 # UUCOMP
 
-UUCOMP is a modern re-write of the old UUCOMP by Ed Carp. Official, for HERMES project.
+UUCOMP is a modern re-write of the old UUCOMP by Edwin R. Carp. Official, for HERMES project.
 
 Source location of old uucomp is: https://opensource.apple.com/source/uucp/uucp-13/uucp/contrib/uucomp.shar.auto.html
 
