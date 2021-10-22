@@ -58,7 +58,7 @@ int main (int argc, char *argv[])
     char c_payload[MAX_C_PAYLOAD];
     char *d_payload; // dynamic size
 
-    char field1[S_BUF], field2[S_BUF], field3[S_BUF], field4[S_BUF], field5[S_BUF], field6[S_BUF], field7[S_BUF], field8[S_BUF], field9[S_BUF], field11[S_BUF];
+    char field1[S_BUF], field2[S_BUF], field3[S_BUF], field4[S_BUF], field5[S_BUF], field6[S_BUF], field7[S_BUF], field8[S_BUF], field9[S_BUF], email_list[MAX_FILENAME];
     char uu_cmd[MAX_FILENAME];
 
     char *char_ptr;
@@ -121,9 +121,9 @@ int main (int argc, char *argv[])
 
         printf("%s payload: %s\n", c_filename, c_payload);
 
-        sscanf(c_payload, "%s %s %s %s %s %s %s %s %s %s %s", field1,
+        sscanf(c_payload, "%s %s %s %s %s %s %s %s %s %s %[^\n]", field1,
                field2, field3, field4, field5, field6, field7, field8, field9,
-               uu_cmd, field11);
+               uu_cmd, email_list);
 
         // check if we already compressed the payload
         if (strcmp (uu_cmd, "crmail") == 0)
@@ -361,7 +361,7 @@ int main (int argc, char *argv[])
 
         fprintf(c_file, "%s %s %s %s %s %s %s %s %s %s %s\n", field1,
                 field2, field3, field4, field5, field6, field7, field8, field9,
-                uu_cmd, field11);
+                uu_cmd, email_list);
 
         fclose(c_file);
 
