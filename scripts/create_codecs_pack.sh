@@ -3,9 +3,9 @@
 CURR_PWD=${PWD}
 
 cd /
-tar zcpvf hermes_codecs-1.0-1rd.tgz opt
-alien -d hermes_codecs-1.0-1rd.tgz
+tar zcpvf hermes_codecs-1.1-2.tgz opt
+alien -d --target=amd64 hermes_codecs-1.1-2.tgz
 
-mv hermes-codecs_1.0-2_all.deb ${CURR_PWD}
+mv hermes-codecs_1.1-2_amd64.deb ${CURR_PWD}
 
 cd ${CURR_PWD}
