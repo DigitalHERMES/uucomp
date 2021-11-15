@@ -16,8 +16,10 @@ output_file=${2}
 
 IMAGE_FORMAT="${input_file##*.}"
 
+OUTPUT_FORMAT="${output_file##*.}"
+
 TEMPFILEYUV=/tmp/temp-$$.yuv
-TEMPFILEYUV2=/tmp/temp-$$-2.yuv
+# TEMPFILEYUV2=/tmp/temp-$$-2.yuv
 
 if [ ${IMAGE_FORMAT} = "vvc" ]; then
 
@@ -27,20 +29,26 @@ if [ ${IMAGE_FORMAT} = "vvc" ]; then
 
     ## for 10 bit output...
     # ffmpeg -pix_fmt yuv420p10le -s ${resolution} -y -i ${TEMPFILEYUV} -pix_fmt yuv420p ${TEMPFILEYUV2}
-
     ## for 10 bit output...
     # convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV2} pnm:- | ${CJPEG_ENC} -quality 95 -outfile "${output_file}"
-    convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV} pnm:- | ${CJPEG_ENC} -quality 95 -outfile "${output_file}"
 
+    if [ ${OUTPUT_FORMAT} = "jpg" ] || [ ${OUTPUT_FORMAT} = "JPG" ] || [ ${OUTPUT_FORMAT} = "jpeg" ] || [ ${OUTPUT_FORMAT} = "JPEG" ] || [ ${OUTPUT_FORMAT} = "Jpg" ] || [ ${OUTPUT_FORMAT} = "Jpeg" ]; then
+      convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV} pnm:- | ${CJPEG_ENC} -quality 95 -outfile "${output_file}"
+    else
+      convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV} "${output_file}"
+    fi
 
     rm -f ${TEMPFILEYUV}
-    rm -f ${TEMPFILEYUV2}
 
 elif [ ${IMAGE_FORMAT} = "evc" ]; then
 
   resolution=$(${EVC_DEC} -i "${input_file}" -o ${TEMPFILEYUV} | grep Resolution| cut -f 2 -d = |  tr -d '[:space:]')
 
-  convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV} pnm:- | ${CJPEG_ENC} -quality 95 -outfile "${output_file}"
+  if [ ${OUTPUT_FORMAT} = "jpg" ] || [ ${OUTPUT_FORMAT} = "JPG" ] || [ ${OUTPUT_FORMAT} = "jpeg" ] || [ ${OUTPUT_FORMAT} = "JPEG" ] || [ ${OUTPUT_FORMAT} = "Jpg" ] || [ ${OUTPUT_FORMAT} = "Jpeg" ]; then
+    convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV} pnm:- | ${CJPEG_ENC} -quality 95 -outfile "${output_file}"
+  else
+    convert-im6 -size ${resolution} -sampling-factor 4:2:0 -depth 8 -colorspace Rec709YCbCr ${TEMPFILEYUV} "${output_file}"
+  fi
 
   rm -f ${TEMPFILEYUV}
 fi
