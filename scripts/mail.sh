@@ -26,4 +26,4 @@ subject=$(zcat /var/spool/uucp/$host_dir/D./$D | head -n20 |grep Subject| awk '{
 echo "subject " $subject
 
 #send mail
-echo "seu email com titulo: $subject \n enviado para $to foi limado "| mail $from 
+echo "Your email with title: $subject \n send to $to was canceled"| mail $from -s "Email cancelled" 
