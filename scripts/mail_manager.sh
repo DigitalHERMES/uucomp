@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# maximum
+# maximum email size
 MAX_EMAIL_SIZE=${MAX_EMAIL_SIZE:=20000}
+
+# maximum queue size
+MAX_UUCP_QUEUE=${MAX_UUCP_QUEUE:=80000}
 
 for i in $(ls -1 /var/spool/uucp/)
 do
@@ -33,3 +36,15 @@ do
     done
   fi
 done
+
+# now check for the size of the full uucp queue... and delete the newest emails..
+total_size=$(uustat -a | awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
+
+if [ ${total_size} -gt ${MAX_EMAIL_SIZE} ]
+then
+  echo "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_EMAIL_SIZE}"
+  # iterate in all emails...
+  # use the SEQF? # use  the time of creation of the C. to identify the latest created email?
+else
+  echo "Total UUCP queue size ${total_size} is good"
+fi
