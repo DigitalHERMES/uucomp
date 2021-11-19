@@ -19,15 +19,15 @@ if [ ! -f $fullC ] ;  then
   echo "error - no C file... exiting"
   exit
 fi
-  
+
 #filter crmail from C and get D
-D=$(cat $fullC | grep crmail | awk '{print $6 ;}')
+D=$(cat $fullC | grep crmail | awk '{print $2 ;}')
 
 #get destination
 to=$(cat $fullC | cut -d ' ' -f 11- )
 echo "To: " $to
 
-fullD="/var/spool/uucp/$host/D./$D" 
+fullD="/var/spool/uucp/$host/D./$D"
 if [ ! -f $fullD ] ; then
   echo "error - no D file... exiting"
   exit

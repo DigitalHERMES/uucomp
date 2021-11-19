@@ -43,3 +43,5 @@ install: uucomp crmail
 	install -D ../scripts/decompress_image.sh $(DESTDIR)$(prefix)/bin/decompress_image.sh
 	install -D ../scripts/decompress_audio.sh $(DESTDIR)$(prefix)/bin/decompress_audio.sh
 	install -D ../scripts/compress.sh $(DESTDIR)$(prefix)/bin/compress.sh
+	install -D ../scripts/mailkill.sh $(DESTDIR)$(prefix)/bin/mailkill.sh
+	install -D ../scripts/mail_manager.sh $(DESTDIR)$(prefix)/bin/mail_manager.sh
