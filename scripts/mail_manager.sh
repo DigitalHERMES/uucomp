@@ -19,10 +19,10 @@ do
       then
         D=$(cat ${j} | grep crmail | awk '{print $2 ;}')
         D_size=$(stat -c %s ../D./${D})
+        id=$(echo ${j} | cut -d . -f 2)
+        uuid="${i}.${id}"
         if [ ${D_size} -gt ${MAX_EMAIL_SIZE} ]
         then
-          id=$(echo ${j} | cut -d . -f 2)
-          uuid="${i}.${id}"
           echo "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
           mailkill.sh ${uuid}
         else
