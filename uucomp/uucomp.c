@@ -73,8 +73,6 @@ int main (int argc, char *argv[])
 
     char *blob = NULL;
 
-    bool c_file_already_rewritten;
-
     if (argc < 2)
     {
         fprintf(stderr, "uucomp version %s by rhizomatica --\n\n", VERSION);
@@ -87,7 +85,6 @@ int main (int argc, char *argv[])
     for (int i = 1; i < argc; i++)
     {
         c_filename = argv[i];
-        c_file_already_rewritten = false;
 
         // Check if C file exists...
         if (strncmp (c_filename, "C.", 2) != 0)
@@ -266,24 +263,6 @@ int main (int argc, char *argv[])
         fclose(tmp_media);
         free(blob);
 
-        // we re-write C. in advance in order not to cause race condition in mail_manager.sh...
-        c_file_already_rewritten = true;
-
-        c_file = fopen(c_filename, "w");
-        if (c_file == NULL)
-        {
-            printf("%s could not be opened.\n", c_filename);
-            continue;
-        }
-
-        sprintf(uu_cmd, "crmail");
-
-        fprintf(c_file, "%s %s %s %s %s %s %s %s %s %s %s\n", field1,
-                field2, field3, field4, field5, field6, field7, field8, field9,
-                uu_cmd, email_list);
-
-        fclose(c_file);
-
         // ********************
         // compress the media
 
@@ -367,23 +346,20 @@ int main (int argc, char *argv[])
         unlink (compress_cmd);
 
 // re-writing C. file
-        if (c_file_already_rewritten == false)
+        c_file = fopen(c_filename, "w");
+        if (c_file == NULL)
         {
-            c_file = fopen(c_filename, "w");
-            if (c_file == NULL)
-            {
-                printf("%s could not be opened.\n", c_filename);
-                continue;
-            }
-
-            sprintf(uu_cmd, "crmail");
-
-            fprintf(c_file, "%s %s %s %s %s %s %s %s %s %s %s\n", field1,
-                    field2, field3, field4, field5, field6, field7, field8, field9,
-                    uu_cmd, email_list);
-
-            fclose(c_file);
+            printf("%s could not be opened.\n", c_filename);
+            continue;
         }
+
+        sprintf(uu_cmd, "crmail");
+
+        fprintf(c_file, "%s %s %s %s %s %s %s %s %s %s %s\n", field1,
+                field2, field3, field4, field5, field6, field7, field8, field9,
+                uu_cmd, email_list);
+
+        fclose(c_file);
 
         free(d_payload);
     }
