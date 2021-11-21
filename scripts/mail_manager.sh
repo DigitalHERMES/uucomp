@@ -27,7 +27,7 @@ do
         if [ ${D_size} -gt ${MAX_EMAIL_SIZE} ]
         then
           echo "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
-          mailkill.sh ${uuid}
+          mailkill.sh size_limit ${uuid}
         else
           echo "UUID = ${uuid} SIZE ${uuid} IS GOOD"
         fi
@@ -42,9 +42,11 @@ done
 # now check for the size of the full uucp queue... and delete the newest emails..
 total_size=$(uustat -a | awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
 
-if [ ${total_size} -gt ${MAX_EMAIL_SIZE} ]
-then
-  echo "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_EMAIL_SIZE}. Deleting last email."
+while [ "${total_size}" -gt "${MAX_UUCP_QUEUE}" ]
+do
+  newest_timestamp="0"
+
+  echo "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_UUCP_QUEUE}. Deleting last email."
 
   for i in $(ls -1 /var/spool/uucp/)
   do
@@ -58,6 +60,13 @@ then
         cmd=$(cat ${j} | cut -d ' '  -f 10 )
         if [ "${cmd}" == "crmail" ]
         then
+          time_stamp="$( stat -c '%W' ${j} )"
+          if [ "${time_stamp}" -gt "${newest_timestamp}" ]
+          then
+            newest_timestamp="${time_stamp}"
+            id=$(echo ${j} | cut -d . -f 2)
+            uuid="${i}.${id}"
+          fi
           # get the stat in unix seconds timestamp pra ficar facil de achar quem eh o mais novo...
         fi
 
@@ -65,8 +74,11 @@ then
     fi
   done
 
+  echo "Deleting uuid: ${uuid} ${newest_timestamp}"
   # delete the newest email...
+  mailkill.sh queue_full ${uuid}
 
-else
-  echo "Total UUCP queue size ${total_size} is good"
-fi
+  total_size=$(uustat -a | awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
+done
+
+echo "Total UUCP queue size ${total_size} is good"
