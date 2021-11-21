@@ -38,7 +38,6 @@ do
 done
 
 
-# TODO: use a: WHILE  [ ${total_size} -gt ${MAX_EMAIL_SIZE} ] ....
 # now check for the size of the full uucp queue... and delete the newest emails..
 total_size=$(uustat -a | awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
 
