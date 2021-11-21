@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Ecuador is UTC -5 (put the + in positive timezones)
-TIMEZONE="- 18000"
-
 if [ $# -eq 0 ] || [ $# -eq 1 ] || [ $# -gt 3 ]; then
   echo "Usage: $0 [es|pt|en] size_limit|queue_full|gui uuid"
   exit 1
@@ -51,7 +48,7 @@ subject=$(zcat $fullD | head -n20 |grep Subject| awk '{print $2;}')
 
 kill=$(uustat -k $uuid)
 
-local_time="$(date -d @$(( $(stat -c %W $fullC) ${TIMEZONE} )) '+%H:%M %d/%m/%Y' )"
+local_time="$(date -d @$(stat -c %W ${fullC}) '+%H:%M %d/%m/%Y' )"
 
 if [ $lang = "en" ] && [ $type = "gui" ]; then
   message="Your email with destination(s): $to sent at ${local_time} was canceled by the admin user. \n\nThis is an automatic message from Hermes System!"
