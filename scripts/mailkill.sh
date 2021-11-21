@@ -46,9 +46,9 @@ from=$(zcat $fullD | head -n1 | awk '{print $2;}')
 
 subject=$(zcat $fullD | head -n20 |grep Subject| awk '{print $2;}')
 
-kill=$(uustat -k $uuid)
-
 local_time="$(date -d @$(stat -c %W ${fullC}) '+%H:%M %d/%m/%Y' )"
+
+kill=$(uustat -k $uuid)
 
 if [ $lang = "en" ] && [ $type = "gui" ]; then
   message="Your email with destination(s): $to sent at ${local_time} was canceled by the admin user. \n\nThis is an automatic message from Hermes System!"
