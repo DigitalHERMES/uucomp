@@ -38,8 +38,9 @@ do
 done
 
 
-# now check for the size of the full uucp queue... and delete the newest emails..
-total_size=$(uustat -a | awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
+# now check for the size of the full uucp queue... and delete the newest emails.. but not rmail, as there might
+# be other emails being processed together
+total_size=$(uustat -a | grep -v ' rmail ' |  awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
 
 while [ "${total_size}" -gt "${MAX_UUCP_QUEUE}" ]
 do
