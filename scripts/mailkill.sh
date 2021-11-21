@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -eq 0 ] || [ $# -gt 3 ] || [ $# -eq 2 ]; then
-  echo "Usage: $0 [es|en sys|gui] uuid"
+  echo "Usage: $0 [es|pt|en size_limit|queue_full|gui] uuid"
   exit 1
 fi
 
@@ -12,7 +12,7 @@ if [ $# -eq 3 ]; then
   uuid=${3}
 elif [ $# -eq 1 ]; then
   lang="en"
-  type="sys"
+  type="size_limit"
   uuid=$1
 fi
 
@@ -49,18 +49,26 @@ subject=$(zcat $fullD | head -n20 |grep Subject| awk '{print $2;}')
 kill=$(uustat -k $uuid)
 
 if [ $lang = "en" ] && [ $type = "gui" ]; then
-  message="Your email with destination(s): $to with subject: $subject was canceled by the admin user. \n\n This is an automatic message from Hermes System!"
+  message="Your email with destination(s): $to with subject: $subject was canceled by the admin user. \n\nThis is an automatic message from Hermes System!"
   subject="Email canceled by the admin user"
-elif [ $lang = "en" ] && [ $type = "sys" ]; then
-  message="Your email with destination(s): $to with subject: $subject was canceled because exceeds system limits. \n\n This is an automatic message from Hermes System!"
+elif [ $lang = "en" ] && [ $type = "size_limit" ]; then
+  message="Your email with destination(s): $to with subject: $subject was canceled because exceeds maximum email size limit. \n\nThis is an automatic message from Hermes System!"
   subject="Email canceled by the system"
+elif [ $lang = "en" ] && [ $type = "queue_full" ]; then
+  message="Your email with destination(s): $to with subject: $subject was canceled because transmission list exceeds maximum size. \n\nThis is an automatic message from Hermes System!"
+  subject="Email canceled by the system"
+
 elif [ $lang = "es" ] && [ $type = "gui" ]; then
-  message="Su correo electrónico con destino(s): $to con asunto: $subject fue cancelado por el usuario administrador. \n\n Este es un mensaje del sistema automático de Hermes!"
+  message="Su correo electrónico con destino(s): $to con asunto: $subject fue cancelado por el usuario administrador. \n\nEste es un mensaje del sistema automático de Hermes!"
   subject="Email cancelado por el administrador"
-elif [ $lang = "es" ] && [ $type = "sys" ]; then
-  message="Su correo electrónico con destino(s): $to con asunto: $subject fue cancelado por exceder los límites del sistema. \n\n Este es un mensaje del sistema automático de Hermes!"
+elif [ $lang = "es" ] && [ $type = "size_limit" ]; then
+  message="Su correo electrónico con destino(s): $to con asunto: $subject fue cancelado porque supera el límite máximo de tamaño de correo electrónico. \n\nEste es un mensaje del sistema automático de Hermes!"
   subject="Email cancelado por el sistema"
+elif [ $lang = "es" ] && [ $type = "queue_full" ]; then
+  message="Su correo electrónico con destino(s): $to con asunto: $subject fue cancelado porque la lista de transmisión excede el tamaño máximo. \n\nEste es un mensaje del sistema automático de Hermes!"
+  subject="Email cancelado por el sistema"
+
 fi
 
 #send email
-echo $message | mail  -s "email cancelled" $from
+echo -e $message | mail  -s "email cancelled" $from
