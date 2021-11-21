@@ -78,7 +78,7 @@ do
   # delete the newest email...
   mailkill.sh queue_full ${uuid}
 
-  total_size=$(uustat -a | awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
+  total_size=$(uustat -a | grep -v ' rmail ' |  awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
 done
 
 echo "Total UUCP queue size ${total_size} is good"
