@@ -16,6 +16,13 @@ UUCOMP provides compression for email transport over UUCP.
 
 * Version 1.5 by Ed in directory uucomp-1.5.
 
+# Features
+
+Our uucomp provides rewriting features for email audio and image
+attachments compression (scripts available in "scripts" folder"), beyond
+standard gzip compression. The necessary encoders are available at:
+http://packages.hermes.radio/
+
 ## License
 
 GPL v3+
