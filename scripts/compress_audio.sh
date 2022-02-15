@@ -24,8 +24,8 @@ AUDIO_FORMAT="${output_file##*.}"
 TEMPFILE=/tmp/temp-$$.${AUDIO_FORMAT}
 
 if [ ${AUDIO_FORMAT} = "lpcnet" ]; then
-  ffmpeg -y -i ${input_file}  -c:a pcm_s16le -f s16le -ac 1 -ar 16000 ${TEMPFILE}
-  ${LPCNET_ENC} -encode ${TEMPFILE} ${output_file}
+  ffmpeg -y -i "${input_file}"  -c:a pcm_s16le -f s16le -ac 1 -ar 16000 ${TEMPFILE}
+  ${LPCNET_ENC} -encode ${TEMPFILE} "${output_file}"
 
   rm -f ${TEMPFILE}
 
