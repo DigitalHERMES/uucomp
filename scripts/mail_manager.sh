@@ -71,23 +71,27 @@ else
   host=$(echo ${1}  | rev | cut -d '/' -f 3 | rev)
   C=$(echo ${1}  | rev | cut -d '/' -f 1 | rev)
   echo "Looking at system ${host}"
-  cd /var/spool/uucp/${host}/C.
 
-  uucomp ${C}
-
-  cmd=$(cat ${C} | cut -d ' '  -f 10 )
-  if [ "${cmd}" == "crmail" ]
+  if [ -d "/var/spool/uucp/${host}/C." ]
   then
-    D=$(cat ${C} | grep crmail | awk '{print $2 ;}')
-    D_size=$(stat -c %s ../D./${D})
-    id=$(echo ${C} | cut -d . -f 2)
-    uuid="${host}.${id}"
-    if [ ${D_size} -gt ${MAX_EMAIL_SIZE} ]
+    cd /var/spool/uucp/${host}/C.
+
+    uucomp ${C}
+
+    cmd=$(cat ${C} | cut -d ' '  -f 10 )
+    if [ "${cmd}" == "crmail" ]
     then
-      echo "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
-      mailkill.sh size_limit ${uuid}
-    else
-      echo "UUID = ${uuid} SIZE ${uuid} IS GOOD"
+      D=$(cat ${C} | grep crmail | awk '{print $2 ;}')
+      D_size=$(stat -c %s ../D./${D})
+      id=$(echo ${C} | cut -d . -f 2)
+      uuid="${host}.${id}"
+      if [ ${D_size} -gt ${MAX_EMAIL_SIZE} ]
+      then
+        echo "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
+        mailkill.sh size_limit ${uuid}
+      else
+        echo "UUID = ${uuid} SIZE ${uuid} IS GOOD"
+      fi
     fi
   fi
 
