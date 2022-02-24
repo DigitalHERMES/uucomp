@@ -8,6 +8,16 @@ MAX_EMAIL_SIZE=${MAX_EMAIL_SIZE:=20000}
 # maximum queue size
 MAX_UUCP_QUEUE=${MAX_UUCP_QUEUE:=80000}
 
+# turn on log on syslog, disabled by default
+SYSLOG=false
+
+function syslog(){
+  if $SYSLOG; then
+      echo $@ | systemd-cat -t mail_manager -p info
+    else
+      echo $@
+  fi
+}
 
 # input paramenters: $HOST
 get_uucp_queue_size_for_host ()
@@ -42,7 +52,7 @@ if [ ! -z "${1}" ]; then
 
   host=$(echo ${1}  | rev | cut -d '/' -f 3 | rev)
   C=$(echo ${1}  | rev | cut -d '/' -f 1 | rev)
-  echo "Looking at system ${host}"
+  syslog "Looking at system ${host}"
 
   # enforce the email being added conforms to the maximum size
   if [ -d "/var/spool/uucp/${host}/C." ]
@@ -66,10 +76,10 @@ if [ ! -z "${1}" ]; then
       uuid="${host}.${id}"
       if [ ${D_size} -gt ${MAX_EMAIL_SIZE} ]
       then
-        echo "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
+        syslog "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
         mailkill.sh size_limit ${uuid}
       else
-        echo "UUID = ${uuid} SIZE ${uuid} IS GOOD"
+        syslog "UUID = ${uuid} SIZE ${uuid} IS GOOD"
       fi
     fi
   fi
@@ -86,7 +96,7 @@ if [ ! -z "${1}" ]; then
     while [ "${total_size}" -gt "${MAX_UUCP_QUEUE}" ]
     do
       newest_timestamp="0"
-      echo "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_UUCP_QUEUE}. Deleting last email."
+      syslog "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_UUCP_QUEUE}. Deleting last email."
 
       for j in $(ls -1)
       do
@@ -105,13 +115,13 @@ if [ ! -z "${1}" ]; then
         fi
       done
 
-      echo "Deleting uuid: ${uuid} ${newest_timestamp}"
+      syslog "Deleting uuid: ${uuid} ${newest_timestamp}"
       # delete the newest email...
       mailkill.sh queue_full ${uuid}
 
       get_uucp_queue_size_for_host
     done
-    echo "Total UUCP email queue size ${total_size} to ${HOST} is good"
+    syslog "Total UUCP email queue size ${total_size} to ${HOST} is good"
   fi
 
   ## don't use this mode anymore... kept for compatibility purposes (no argv[1])
@@ -122,7 +132,7 @@ else
   do
     if [ -d /var/spool/uucp/${i}/C. ]
     then
-      echo "Looking at system ${i}"
+      syslog "Looking at system ${i}"
       cd /var/spool/uucp/${i}/C.
       for j in $(ls -1)
       do
@@ -138,10 +148,10 @@ else
           uuid="${i}.${id}"
           if [ ${D_size} -gt ${MAX_EMAIL_SIZE} ]
           then
-            echo "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
+            syslog "UUID = ${uuid} SIZE ${D_size} WILL ME MAILKILLED!"
             mailkill.sh size_limit ${uuid}
           else
-            echo "UUID = ${uuid} SIZE ${uuid} IS GOOD"
+            syslog "UUID = ${uuid} SIZE ${uuid} IS GOOD"
           fi
         fi
       done
@@ -159,7 +169,7 @@ else
     then
       HOST=${i}
       get_uucp_queue_size_for_host
-      echo "UUCP email queue for ${HOST} is ${total_size} bytes."
+      syslog "UUCP email queue for ${HOST} is ${total_size} bytes."
 
       # total_size=$(uustat -a | grep -v ' rmail ' |  awk -F ' ' '{sum+=$(NF - 1);}END{print sum;}')
 
@@ -168,7 +178,7 @@ else
       while [ "${total_size}" -gt "${MAX_UUCP_QUEUE}" ]
       do
         newest_timestamp="0"
-        echo "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_UUCP_QUEUE}. Deleting last email."
+        syslog "Total size of the UUCP (${total_size}) exceed the maximum of ${MAX_UUCP_QUEUE}. Deleting last email."
 
         for j in $(ls -1)
         do
@@ -187,13 +197,13 @@ else
           fi
         done
 
-        echo "Deleting uuid: ${uuid} ${newest_timestamp}"
+        syslog "Deleting uuid: ${uuid} ${newest_timestamp}"
         # delete the newest email...
         mailkill.sh queue_full ${uuid}
 
         get_uucp_queue_size_for_host
       done
-      echo "Total UUCP email queue size ${total_size} to ${HOST} is good"
+      syslog "Total UUCP email queue size ${total_size} to ${HOST} is good"
     fi
 
   done
