@@ -95,7 +95,7 @@ if [ ! -z "${1}" ]; then
           then
             newest_timestamp="${time_stamp}"
             id=$(echo ${j} | cut -d . -f 2)
-            uuid="${i}.${id}"
+            uuid="${host}.${id}"
           fi
         fi
       done
