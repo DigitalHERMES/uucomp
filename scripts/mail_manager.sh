@@ -49,9 +49,15 @@ if [ ! -z "${1}" ]; then
   then
     cd /var/spool/uucp/${host}/C.
 
-    uucomp ${C}
+    cmd=$(cat ${C} | cut -d ' '  -f 10 )
+
+    if [ "${cmd}" == "rmail" ]
+    then
+        uucomp ${C}
+    fi
 
     cmd=$(cat ${C} | cut -d ' '  -f 10 )
+
     if [ "${cmd}" == "crmail" ]
     then
       D=$(cat ${C} | grep crmail | awk '{print $2 ;}')
