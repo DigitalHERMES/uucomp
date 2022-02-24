@@ -12,8 +12,7 @@ MAX_UUCP_QUEUE=${MAX_UUCP_QUEUE:=80000}
 # input paramenters: $HOST
 get_uucp_queue_size_for_host ()
 {
-  # size=$(uustat -s ${HOST} -u www-data | egrep -o '(\w+)\sbytes' | awk -F ' ' '{sum+=$1; } END {print sum}' 2> /dev/null)
-  size=$(uustat -s ${HOST} | egrep -o '(\w+)\sbytes' | awk -F ' ' '{sum+=$1; } END {print sum}' 2> /dev/null)
+  size=$(uustat -s ${HOST} | grep crmail | egrep -o '(\w+)\sbytes' | awk -F ' ' '{sum+=$1; } END {print sum}' 2> /dev/null)
   total_size=$(printf '%d' ${size} 2>/dev/null)
 
 ## old code without using uustat
