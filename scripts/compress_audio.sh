@@ -1,18 +1,18 @@
 #!/bin/bash
 # usage:
-# compress_audio.sh audio_filename.{wav,mp3,aac,...} [output.{lpcnet,lyra}]
+# compress_audio.sh audio_filename.{wav,mp3,aac,...} [output.{lpcnet,nesc}]
 
 ## env vars:
 # LPCNET_ENC: lpcnet enc binary
-# LYRA_ENC: lyra enc binary
+# NESC_ENC: nesc enc binary
 # input_file
 # output_file
 
 LPCNET_ENC=${LPCNET_ENC:=/opt/lpcnet/lpcnet_demo}
-LYRA_ENC=${LYRA_ENC:=/opt/lyra/encoder_main}
+NESC_ENC=${NESC_ENC:=/opt/nesc/nesc_enc}
 
 if [ $# -lt 2 ]; then
-  echo "Usage: $0 audio_filename.{wav,mp3,aac,...} [output.{lpcnet,lyra}]"
+  echo "Usage: $0 audio_filename.{wav,mp3,aac,...} [output.{lpcnet,nesc}]"
   exit 1
 fi
 
@@ -27,11 +27,16 @@ if [ ${AUDIO_FORMAT} = "lpcnet" ]; then
   ffmpeg -y -i "${input_file}"  -c:a pcm_s16le -f s16le -ac 1 -ar 16000 ${TEMPFILE}
   ${LPCNET_ENC} -encode ${TEMPFILE} "${output_file}"
 
-  rm -f ${TEMPFILE}
+elif [ ${AUDIO_FORMAT} = "nesc" ]; then
+  ffmpeg -y -i "${input_file}"  -c:a pcm_s16le -f s16le -ac 1 -ar 16000 ${TEMPFILE}
+  ${NESC_ENC} -q -b 2 -if ${TEMPFILE} -of "${output_file}"
 
 else
   echo "Unsupported extension: ${AUDIO_FORMAT}."
   exit
 fi
+
+rm -f ${TEMPFILE}
+
 
 echo "Final file size: $(stat -c%s "${output_file}")"
