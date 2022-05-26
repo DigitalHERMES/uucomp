@@ -83,4 +83,4 @@ elif [ $lang = "pt" ] && [ $type = "queue_full" ]; then
 fi
 
 #send email
-echo -e ${message} | mail  -s ${subject} $from
+echo -e ${message} | mail  -s "${subject}" ${from}
