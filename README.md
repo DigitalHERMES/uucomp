@@ -1,7 +1,7 @@
 # UUCOMP
 
 UUCOMP provides compression for email transport over UUCP.
-Hermes UUCOMP is a modern re-write of original UUCOMP by Edwin R. Carp.
+Hermes UUCOMP is a re-write of original UUCOMP by Edwin R. Carp.
 
 Source location of original uucomp is: https://opensource.apple.com/source/uucp/uucp-13/uucp/contrib/uucomp.shar.auto.html
 
