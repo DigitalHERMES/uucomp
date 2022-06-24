@@ -29,7 +29,7 @@ if [ ${AUDIO_FORMAT} = "lpcnet" ]; then
 
 elif [ ${AUDIO_FORMAT} = "nesc" ]; then
   ffmpeg -y -i "${input_file}"  -c:a pcm_s16le -f s16le -ac 1 -ar 16000 ${TEMPFILE}
-  ${NESC_ENC} -q -b 2 -if ${TEMPFILE} -of "${output_file}"
+  ${NESC_ENC} -q -b 1600 -if ${TEMPFILE} -of "${output_file}"
 
 else
   echo "Unsupported extension: ${AUDIO_FORMAT}."
